@@ -16,7 +16,6 @@ def KeySearch_one( small_dict, keystring ):
     for key in small_dict: 
         if keystring in key.lower():
             return key
-
    
 def KeySearch_two( small_dict, keystring1, keystring2 ):  
     # search with two key words 
@@ -28,7 +27,6 @@ def KeySearch_two( small_dict, keystring1, keystring2 ):
         if keystring1 in key.lower() and keystring2 in key.lower():
             keys.append(key)
     return keys
-
 
 def ReadData( pathfile ):
     with open( pathfile, 'r' ) as csvfile:
