@@ -16,7 +16,7 @@ def KeySearch_one( small_dict, keystring ):
     for key in small_dict: 
         if keystring in key.lower():
             return key
-   
+
 def KeySearch_two( small_dict, keystring1, keystring2 ):  
     # search with two key words 
     # if two results, return both results 
@@ -31,31 +31,38 @@ def KeySearch_two( small_dict, keystring1, keystring2 ):
 def ReadData( pathfile ):
     with open( pathfile, 'r' ) as csvfile:
         reader = csv.DictReader( csvfile, delimiter = ';' ) 
-        # row1 is a dictionary with reduced dimension, 1 row
+        # row1 is the first row
         row1 = next(reader)
         key_status = KeySearch_one( row1, 'STATUS' )
         key_occup = KeySearch_one( row1, 'SOC_NAME' )
-        key_state = KeySearch_two( row1, 'WORK', 'STATE')
-        dat_occup = [ row1[key_occup] ]
-        if (len(key_state) == 1):
-            dat_state = [ row1[key_state[0]] ]
-        else:
-            # more than 1 keys, use the first valid value
-            if (row1[key_state[0]] == '' ):
-                dat_state = [ row1[key_state[1]] ]
-            else:
+        key_state = KeySearch_two( row1, 'WORK', 'STATE')        
+        # initiate list values
+        value_status = row1[key_status].lower()
+        if value_status == 'certified':
+            dat_occup = [ row1[key_occup] ]
+            if (len(key_state) == 1):
                 dat_state = [ row1[key_state[0]] ]
+            else:
+                # more than 1 keys, use the first valid value
+                if ( row1[key_state[0]] == '' ):
+                    dat_state = [ row1[key_state[1]] ]
+                else:
+                    dat_state = [ row1[key_state[0]] ]
+        else:
+            dat_state = []
+            dat_occup = []            
+        # append more certified values        
         for row in reader:
             value_status = row[key_status].lower()
             if value_status == 'certified':
-                dat_occup.append(row[key_occup])
-                if (len(key_state) == 1):
-                    dat_state.append(row[key_state[0]])
+                dat_occup.append( row[key_occup] )
+                if ( len(key_state) == 1 ):
+                    dat_state.append( row[key_state[0]] )
                 else:
                     if (row[key_state[0]] == '' ):
-                        dat_state.append(row[key_state[1]])
+                        dat_state.append( row[key_state[1]] )
                     else:    
-                        dat_state.append(row[key_state[0]])
+                        dat_state.append( row[key_state[0]] )
     csvfile.close()
     return dat_occup, dat_state           
 
