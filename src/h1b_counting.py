@@ -13,9 +13,11 @@ import csv
 def KeySearch_one( small_dict, keystring ):
     # search if there is only one key word
     keystring = keystring.lower() 
+    keys = []
     for key in small_dict: 
         if keystring in key.lower():
-            return key
+            keys.append(key)
+    return keys        
 
 def KeySearch_two( small_dict, keystring1, keystring2 ):  
     # search with two key words 
@@ -28,6 +30,22 @@ def KeySearch_two( small_dict, keystring1, keystring2 ):
             keys.append(key)
     return keys
 
+def FindList( row, dat_select, key_select, key_criteria, set_criteria  ):
+    # find recode according to criteria and append to list
+    # row of dictionary, column selected, key of interest ( <= 1 ), and
+    # key of criteria (status), and value of criteria
+    value_criteria = row[key_criteria[0]].lower()
+    n_key = len(key_select)
+    i_key = n_key - 1
+    if value_criteria == set_criteria:
+        # go from the last key in key_select and use the first non-empty field
+        while i_key >= 0:
+            if ( row[key_select[i_key]] != '' or i_key == 0 ):
+                break;
+            else:
+                i_key -= 1                                 
+        dat_select.append( row[key_select[i_key]] ) 
+    
 def ReadData( pathfile ):
     with open( pathfile, 'r' ) as csvfile:
         reader = csv.DictReader( csvfile, delimiter = ';' ) 
@@ -35,34 +53,18 @@ def ReadData( pathfile ):
         row1 = next(reader)
         key_status = KeySearch_one( row1, 'STATUS' )
         key_occup = KeySearch_one( row1, 'SOC_NAME' )
-        key_state = KeySearch_two( row1, 'WORK', 'STATE')        
+        key_state = KeySearch_two( row1, 'WORK', 'STATE') 
+        value_status = 'certified'
         # initiate list values
-        value_status = row1[key_status].lower()
-        if value_status == 'certified':
-            dat_occup = [ row1[key_occup] ]
-            if (len(key_state) == 1):
-                dat_state = [ row1[key_state[0]] ]
-            else:
-                # more than 1 keys, use the first valid value
-                if ( row1[key_state[0]] == '' ):
-                    dat_state = [ row1[key_state[1]] ]
-                else:
-                    dat_state = [ row1[key_state[0]] ]
-        else:
-            dat_state = []
-            dat_occup = []            
-        # append more certified values        
+        dat_state = []
+        dat_occup = [] 
+        # first row
+        FindList( row1, dat_state, key_state, key_status, value_status  )
+        FindList( row1, dat_occup, key_occup, key_status, value_status  )
+        #remaining rows               
         for row in reader:
-            value_status = row[key_status].lower()
-            if value_status == 'certified':
-                dat_occup.append( row[key_occup] )
-                if ( len(key_state) == 1 ):
-                    dat_state.append( row[key_state[0]] )
-                else:
-                    if (row[key_state[0]] == '' ):
-                        dat_state.append( row[key_state[1]] )
-                    else:    
-                        dat_state.append( row[key_state[0]] )
+            FindList( row, dat_state, key_state, key_status, value_status  )
+            FindList( row, dat_occup, key_occup, key_status, value_status  )
     csvfile.close()
     return dat_occup, dat_state           
 
